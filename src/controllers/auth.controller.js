@@ -1,12 +1,17 @@
 import User from '../models/user.model.js';
 import bcryp from 'bcryptjs';
 import { createAccessToken } from '../libs/jwt.js';
+import jwt from 'jsonwebtoken';
+import { TOKEN_SECRET } from '../config.js';
 
 
 export const register = async (req, res) => {
     const {email, password, username } = req.body;
    
     try{
+        const userFound = await User.findOne({email});
+        if(userFound) return res.status(400).json(["Usuario ya existe"]);
+
         const passwordHash = await bcryp.hash(password, 10);
 
         const newUser = new User({
@@ -19,7 +24,8 @@ export const register = async (req, res) => {
         //genera el token 
         const token = await createAccessToken({id: userSaved._id});
           
-            res.cookie("token", token)
+            res.cookie("token", token);
+
             res.json({
                 id: userSaved._id,      
                 username: userSaved.username,
@@ -65,6 +71,34 @@ export const logout = (req, res) => {
     return res.sendStatus(200); 
 };
 
-export const profile = (req, res) => {
-    res.send('profile');
+export const profile = async(req, res) => {
+    const userFound = await User.findById(req.user.id)
+
+    if(!userFound) return res.status(400).json({message: "Usuario no encontrado"});
+
+    return res.json({
+        id: userFound._id,      
+        username: userFound.username,
+        email: userFound.email,
+        createdAt: userFound.createdAt,
+        updatedAt: userFound.updatedAt,
+    });
+};
+
+export const verifyToken = async (req, res) => {
+    const {token} = req.cookies;
+    if(!token) return res.status(401).json({message: "Acceso no autorizado"});
+   
+    jwt.verify(token, TOKEN_SECRET, async (err, user) => {
+        if(err) return res.status(401).json({message: "Acceso no autorizado"});
+
+        const userFound = await User.findById(user.id);
+        if(!userFound) return res.status(401).json({message: "Usuario no encontrado"});
+    
+        return res.json({
+            id: userFound._id,      
+            username: userFound.username,
+            email: userFound.email,
+        });
+    })
 };

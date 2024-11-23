@@ -1,0 +1,20 @@
+# Node.js
+node_modules/       # Ignora la carpeta de dependencias
+.env                # Ignora las variables de entorno
+package-lock.json   # Opcional: ignora el lockfile (si no es necesario)
+
+# React (Vite)
+dist/               # Ignora la carpeta de producción de Vite
+public/*.cache      # Ignora archivos de cache en 'public'
+
+# Logs
+logs/
+*.log               # Ignora cualquier archivo con extensión .log
+
+# IDEs
+.vscode/            # Ignora configuraciones locales de VS Code
+.DS_Store           # Archivos del sistema macOS
+Thumbs.db           # Archivos del sistema Windows
+
+# Otros
+*.bak               # Archivos de respaldo
